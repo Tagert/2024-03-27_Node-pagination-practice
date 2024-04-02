@@ -9,6 +9,7 @@ const ADD_FLIGHT = async (req, res) => {
       destinationCityPhotoUrl: req.body.destinationCityPhotoUrl,
       departureTime: req.body.departureTime,
     });
+    flight.id = flight._id.toString();
 
     const response = await flight.save();
 
