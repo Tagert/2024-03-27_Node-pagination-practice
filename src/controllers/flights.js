@@ -1,4 +1,5 @@
 import { FlightModel } from "../models/flights.js";
+import { flightsCartsModel } from "../models/flightsCart.js";
 
 const ADD_FLIGHT = async (req, res) => {
   try {
@@ -14,6 +15,32 @@ const ADD_FLIGHT = async (req, res) => {
     const response = await flight.save();
 
     return res.status(201).json({ response: response });
+  } catch (err) {
+    console.log("HANDLED ERROR:", err);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+const ADD_FLIGHT_TO_CART = async (req, res) => {
+  try {
+    const flight = new FlightModel({
+      price: req.body.price,
+      departureCity: req.body.departureCity,
+      destinationCity: req.body.destinationCity,
+      destinationCityPhotoUrl: req.body.destinationCityPhotoUrl,
+      departureTime: req.body.departureTime,
+    });
+    flight.id = flight._id.toString();
+
+    const response = await flight.save();
+
+    await flightsCartsModel.findByIdAndUpdate(req.params.id, {
+      $push: { userCartFlights_ids: flight.id },
+    });
+
+    return res
+      .status(201)
+      .json({ status: "Flight was created", response: response });
   } catch (err) {
     console.log("HANDLED ERROR:", err);
     return res.status(500).json({ error: "Something went wrong" });
@@ -130,6 +157,7 @@ const APP_STATUS = (req, res) => {
 
 export {
   ADD_FLIGHT,
+  ADD_FLIGHT_TO_CART,
   GET_ALL_FLIGHTS,
   GET_FLIGHT_BY_ID,
   DELETE_FLIGHT_BY_ID,
